@@ -39,6 +39,9 @@ require_once 'includes/db.php';
             margin-bottom: 5px;
             font-weight: bold;
         }
+        .tanggal {
+            background-color: 	#D3D3D3;
+        }
         input[type="text"], input[type="tel"], input[type="date"], select, textarea {
             width: 100%;
             padding: 10px;
@@ -110,7 +113,7 @@ require_once 'includes/db.php';
             </div>
             <div class="form-group">
                 <label for="tanggal">Tanggal:</label>
-                <input type="date" id="tanggal" name="tanggal" required>
+                <input class="tanggal" type="date" id="surveyDate" name="tanggal" readonly>
             </div>
             <div class="form-group indikator">
                 <label for="indikator">Indikator Penilaian:</label>

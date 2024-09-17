@@ -1,6 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     const layananSelect = document.getElementById('layanan');
     const surveyQuestions = document.getElementById('survey-questions');
+    
+    // Menambahkan kode untuk mengisi tanggal otomatis
+    const today = new Date().toISOString().split('T')[0];
+    const surveyDateInput = document.getElementById('surveyDate');
+    if (surveyDateInput) {
+        surveyDateInput.value = today;
+    }
 
     layananSelect.addEventListener('change', function() {
         const selectedLayanan = this.value;
