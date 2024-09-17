@@ -257,10 +257,6 @@ $avg_ratings = get_survey_respondents();
                     </table>
                 </form>
                 <h2>Responden Survey Terbaru</h2>
-
-                <input type="text" name="daterange" value="" />
-
-
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-value"><?php echo $survey_count; ?></div>
@@ -341,15 +337,6 @@ $avg_ratings = get_survey_respondents();
     });
     </script>
 
-<script>
-$(function() {
-  $('input[name="daterange"]').daterangepicker({
-    opens: 'left'
-  }, function(start, end, label) {
-    console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
-  });
-});
-</script>
 
 
 </body>
