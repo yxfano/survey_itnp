@@ -103,10 +103,10 @@ $conn->close();
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            font-size: 14px;
+            font-size: 12px;
             line-height: 1.6;
             color: #333;
-            background-color: #f4f4f4;
+            background: linear-gradient(135deg, #6ebad4, #ffffff);
             margin: 0;
             padding: 0;
             display: flex;
@@ -227,14 +227,11 @@ $conn->close();
             background-color: #fff;
             border-radius: 0 0 5px 5px;
         }
-        .tab-content.active {
-            display: block;
-        }
         .date-filter {
             margin-bottom: 20px;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -259,8 +256,14 @@ $conn->close();
             const contents = document.querySelectorAll('.tab-content');
             tabs.forEach(tab => tab.classList.remove('active'));
             contents.forEach(content => content.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            const tabElement = document.getElementById(tabId);
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+            const tabLink = document.querySelector(`[data-tab="${tabId}"]`);
+            if (tabLink) {
+                tabLink.classList.add('active');
+            }
         }
 
         window.onload = function() {
@@ -268,34 +271,36 @@ $conn->close();
         }
 
         function renderPieChart(data) {
-            const ctx = document.getElementById('satisfactionPieChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Sangat Baik/Sangat Puas (9-10)', 'Baik/Puas (7-8)', 'Cukup Baik/Cukup Puas (5-6)', 'Tidak Baik/Tidak Puas (3-4)', 'Sangat Tidak Baik/Sangat Tidak Puas (1-2)'],
-                    datasets: [{
-                        data: data,
-                        backgroundColor: ['#2ecc71', '#3498db', '#f1c40f', '#e67e22', '#e74c3c'],
-                        borderColor: ['#27ae60', '#2980b9', '#f39c12', '#d35400', '#c0392b'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    return tooltipItem.label + ': ' + tooltipItem.raw + ' responses';
+            const ctx = document.getElementById('satisfactionPieChart');
+            if (ctx) {
+                new Chart(ctx.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['Sangat Baik/Sangat Puas (9-10)', 'Baik/Puas (7-8)', 'Cukup Baik/Cukup Puas (5-6)', 'Tidak Baik/Tidak Puas (3-4)', 'Sangat Tidak Baik/Sangat Tidak Puas (1-2)'],
+                        datasets: [{
+                            data: data,
+                            backgroundColor: ['#2ecc71', '#3498db', '#f1c40f', '#e67e22', '#e74c3c'],
+                            borderColor: ['#27ae60', '#2980b9', '#f39c12', '#d35400', '#c0392b'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.raw + ' responses';
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
         }
 
         // Data untuk pie chart
@@ -307,10 +312,11 @@ $conn->close();
     <div class="sidebar">
         <h2>Admin Panel</h2>
         <ul>
-            <li><a href="dashboard.php?layanan=all" class="<?php echo $layanan_filter == 'all' ? 'active' : ''; ?>">All</a></li>
-            <li><a href="dashboard.php?layanan=Laptop" class="<?php echo $layanan_filter == 'Laptop' ? 'active' : ''; ?>">Laptop</a></li>
-            <li><a href="dashboard.php?layanan=Printer" class="<?php echo $layanan_filter == 'Printer' ? 'active' : ''; ?>">Printer</a></li>
-            <li><a href="dashboard.php?layanan=Penyedia_Layanan_IT" class="<?php echo $layanan_filter == 'Penyedia_Layanan_IT' ? 'active' : ''; ?>">Penyedia Layanan IT</a></li>
+            <li><a href="dashboard.php"  class="active">Dashboard</a></li>
+            <li><a href="data_kuesioner.php">Data Kuesioner</a></li>
+            <li><a href="manage_questions.php">Kelola Pertanyaan</a></li>
+            <li><a href="presentase_kuesioner.php">Presentase Kuesioner</a></li>
+            <li><a href="rekapitulasi_bulanan.php">Rekapitulasi Bulanan</a></li>
             <li><a href="../logout.php">Logout</a></li>
         </ul>
     </div>

@@ -37,76 +37,79 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Terjadi kesalahan. Silakan coba lagi nanti.";
     }
 }
-
 ?>
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin - Survey Layanan IT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #6ebad4, #ffffff);
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
         .login-container {
-            background-color: #ffffff;
+            background-color: #fff;
             padding: 40px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             width: 300px;
+            text-align: center;
         }
         h1 {
-            text-align: center;
-            color: #333;
+            color: #3498db;
             margin-bottom: 30px;
         }
         .form-group {
             margin-bottom: 20px;
+            text-align: left;
         }
         label {
             display: block;
             margin-bottom: 5px;
-            color: #666;
+            font-weight: bold;
         }
-        input[type="text"],
-        input[type="password"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 25px;
             font-size: 16px;
         }
         .btn {
-            background-color: #4CAF50;
+            background-color: #3498db;
             color: white;
             padding: 12px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 25px;
             cursor: pointer;
-            width: 100%;
             font-size: 16px;
+            width: 100%;
         }
         .btn:hover {
-            background-color: #45a049;
+            background-color: #2980b9;
         }
         .error {
-            color: #ff0000;
+            color: #e74c3c;
             margin-bottom: 15px;
         }
         .back-link {
-            text-align: center;
             margin-top: 20px;
         }
         .back-link a {
-            color: #4CAF50;
+            color: #3498db;
             text-decoration: none;
         }
         .back-link a:hover {

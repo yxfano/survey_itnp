@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (averageRating < 5 && !feedbackTextarea.value.trim()) {
             event.preventDefault();
-            alert('Harap memberikan masukan terhadap ketidakpuasan anda.');
+            alert('Silakan isi kritik dan saran jika rata-rata penilaian kurang dari 5.');
             feedbackTextarea.required = true;
         } else {
             feedbackTextarea.required = false;

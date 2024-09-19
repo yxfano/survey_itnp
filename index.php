@@ -12,17 +12,9 @@
             font-family: 'Roboto', sans-serif;
             line-height: 1.6;
             color: #333;
-            background-color: #f4f4f4;
+            background: linear-gradient(135deg, #6ebad4, #ffffff);
             margin: 0;
             padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         h1, h2 {
             color: #3498db;
@@ -43,7 +35,7 @@
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 25px;
             font-size: 16px;
         }
         textarea {
@@ -55,7 +47,7 @@
             color: white;
             padding: 12px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 25px;
             cursor: pointer;
             font-size: 16px;
             width: 100%;
@@ -70,43 +62,61 @@
         .indikator {
             font-size: 12px;
             line-height: 0.7;
+            text-align: center;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Survei Kepuasan Pelayanan Tim IT Non Public Service</h1>
+        <div class="card">
+            <h1>Survei Kepuasan Pelayanan<br>Tim IT Non Public Service</h1>
+            <p style="text-align: justify;">Survei ini dirancang untuk membantu kami sebagai tim ITNPS memahami pengalaman Anda saat menggunakan layanan kami. Feedback Anda sangat berharga bagi kami untuk terus meningkatkan kualitas layanan. Survei ini akan memakan waktu sekitar 2-3 menit untuk diselesaikan. Jawaban Anda akan digunakan untuk keperluan evaluasi dan pengembangan layanan ITNPS.</p>
+            <p style="text-align: justify;">Kami mengucapkan terima kasih atas partisipasi Anda dalam survei ini. Umpan balik Anda akan membantu kami memberikan layanan yang lebih baik di masa mendatang.</p>
+        </div>
         <form id="survey-form" action="process_survey.php" method="POST">
-            <div class="form-group">
-                <label for="unit_kerja">Unit Kerja:</label>
-                <input type="text" id="unit_kerja" name="unit_kerja" required>
+            <div class="card">
+                <div class="form-group">
+                    <label for="unit_kerja">Unit Kerja:</label>
+                    <input type="text" id="unit_kerja" name="unit_kerja" placeholder="Masukkan Unit Kerja Anda" required>
+                </div>
+                <div class="form-group">
+                    <label for="layanan">Layanan:</label>
+                    <select id="layanan" name="layanan" required>
+                        <option value="">Pilih Layanan</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Penyedia_Layanan_IT">Penyedia Layanan IT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tanggal">Tanggal:</label>
+                    <input class="tanggal" type="date" id="surveyDate" name="tanggal" readonly>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="layanan">Layanan:</label>
-                <select id="layanan" name="layanan" required>
-                    <option value="">Pilih Layanan</option>
-                    <option value="Printer">Printer</option>
-                    <option value="Laptop">Laptop</option>
-                    <option value="Penyedia_Layanan_IT">Penyedia Layanan IT</option>
-                </select>
+            <div class="card">
+                <div class="form-group indikator">
+                    <label for="indikator">Indikator Penilaian:</label>
+                    <p><i>1-2 Sangat Buruk   3-4 Buruk   5-6 Netral   7-8 Baik   9-10 Sangat Baik</i></p>
+                </div>
+                <div id="survey-questions"></div>
             </div>
-            <div class="form-group">
-                <label for="tanggal">Tanggal:</label>
-                <input class="tanggal" type="date" id="surveyDate" name="tanggal" readonly>
+            <div class="card">
+                <h2>Kritik dan Saran</h2>
+                <div class="form-group">
+                    <textarea id="feedback" name="feedback" placeholder="Tuliskan kritik dan saran Anda di sini..."></textarea>
+                </div>
+                <button type="submit">Kirim Survey</button>
             </div>
-            <div class="form-group indikator">
-                <label for="indikator">Indikator Penilaian:</label>
-                <p><i>1-2 Sangat Buruk   3-4 Buruk   5-6 Netral   7-8 Baik   9-10 Sangat Baik</i></p>
-            </div>
-            <div id="survey-questions"></div>
-            <h2>Kritik dan Saran</h2>
-            <div class="form-group">
-                <label for="feedback">Kritik dan Saran:</label>
-                <textarea id="feedback" name="feedback" placeholder="Tuliskan kritik dan saran Anda di sini..."></textarea>
-            </div>
-            <button type="submit">Kirim Survey</button>
         </form>
-    </div>
     <script src="assets/js/survey.js"></script>
 </body>
 </html>

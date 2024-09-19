@@ -168,7 +168,7 @@ $questions = get_all_questions();
             <li><a href="data_kuesioner.php">Data Kuesioner</a></li>
             <li><a href="manage_questions.php" class="active">Kelola Pertanyaan</a></li>
             <li><a href="presentase_kuesioner.php">Presentase Kuesioner</a></li>
-            <li><a href="download_results.php">Download Hasil Survey</a></li>
+            <li><a href="rekapitulasi_bulanan.php">Rekapitulasi Bulanan</a></li>            
             <li><a href="../logout.php">Logout</a></li>
         </ul>
     </div>
