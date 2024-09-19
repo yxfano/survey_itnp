@@ -67,21 +67,6 @@
             color: #e74c3c;
             margin-top: 5px;
         }
-        .admin-login {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-        .admin-login a {
-            background-color: #2ecc71;
-            color: white;
-            padding: 8px 15px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .admin-login a:hover {
-            background-color: #27ae60;
-        }
         .indikator {
             font-size: 12px;
             line-height: 0.7;
@@ -90,9 +75,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="admin-login">
-            <a href="login.php">Login Admin</a>
-        </div>
         <h1>Survei Kepuasan Pelayanan Tim IT Non Public Service</h1>
         <form id="survey-form" action="process_survey.php" method="POST">
             <div class="form-group">
