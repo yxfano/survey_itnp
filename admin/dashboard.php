@@ -16,90 +16,94 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
-// Mendapatkan filter dari request
-$reportType = isset($_GET['report_type']) ? $_GET['report_type'] : 'all';
-$dateRange = isset($_GET['date_range']) ? $_GET['date_range'] : date('Y-m-01') . ' - ' . date('Y-m-t');
-list($startDate, $endDate) = explode(' - ', $dateRange);
+// Fungsi untuk mendapatkan data survei berdasarkan layanan dan rentang tanggal
+function getSurveyData($layanan_filter, $start_date, $end_date) {
+    global $conn;
 
-// Query dasar
-$query = "SELECT * FROM surveys WHERE created_at BETWEEN '$startDate' AND '$endDate'";
+    $where_clause = "WHERE 1=1";
+    if ($layanan_filter && $layanan_filter != 'all') {
+        $where_clause .= " AND surveys.layanan = '$layanan_filter'";
+    }
+    if ($start_date && $end_date) {
+        $where_clause .= " AND surveys.created_at BETWEEN '$start_date' AND '$end_date'";
+    }
 
-// Menambahkan filter berdasarkan jenis laporan
-if ($reportType != 'all') {
-    $query .= " AND layanan = '$reportType'";
-}
+    // Mengambil data dari tabel surveys
+    $sql = "SELECT COUNT(*) as total_surveys FROM surveys $where_clause";
+    $result = $conn->query($sql);
+    $total_surveys = $result->num_rows > 0 ? $result->fetch_assoc()['total_surveys'] : 0;
 
-$result = mysqli_query($conn, $query);
+    // Mengambil data dari tabel survey_answers
+    $sql = "SELECT COUNT(*) as positive_feedback FROM survey_answers 
+            JOIN surveys ON survey_answers.survey_id = surveys.id 
+            $where_clause AND survey_answers.answer >= 7";
+    $result = $conn->query($sql);
+    $positive_feedback = $result->num_rows > 0 ? $result->fetch_assoc()['positive_feedback'] : 0;
 
-if (!$result) {
-    die("Query failed: " . mysqli_error($conn));
-}
+    $sql = "SELECT COUNT(*) as negative_feedback FROM survey_answers 
+            JOIN surveys ON survey_answers.survey_id = surveys.id 
+            $where_clause AND survey_answers.answer < 7";
+    $result = $conn->query($sql);
+    $negative_feedback = $result->num_rows > 0 ? $result->fetch_assoc()['negative_feedback'] : 0;
 
-$respondents = [];
-while ($row = mysqli_fetch_assoc($result)) {
-    $survey_id = $row['id'];
-    $query_answers = "SELECT AVG(answer) as avg_rating FROM survey_answers WHERE survey_id = $survey_id";
-    $result_answers = mysqli_query($conn, $query_answers);
-    $avg_rating = mysqli_fetch_assoc($result_answers)['avg_rating'];
-    
-    $respondents[] = [
-        'id' => $row['id'],
-        'unit_kerja' => $row['unit_kerja'],
-        'layanan' => $row['layanan'],
-        'tanggal' => $row['tanggal'],
-        'avg_rating' => $avg_rating,
-        'feedback' => $row['feedback']
+    // Mengambil rata-rata kepuasan dari tabel survey_answers
+    $sql = "SELECT AVG(survey_answers.answer) as average_satisfaction FROM survey_answers 
+            JOIN surveys ON survey_answers.survey_id = surveys.id 
+            $where_clause";
+    $result = $conn->query($sql);
+    $average_satisfaction = $result->num_rows > 0 ? $result->fetch_assoc()['average_satisfaction'] : 0;
+
+    // Mengambil data untuk pie chart
+    $sql = "SELECT survey_answers.answer, COUNT(*) as count FROM survey_answers 
+            JOIN surveys ON survey_answers.survey_id = surveys.id 
+            $where_clause GROUP BY survey_answers.answer";
+    $result = $conn->query($sql);
+    $ratings = [0, 0, 0, 0, 0];
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $answer = $row['answer'];
+            if ($answer >= 9) {
+                $ratings[0] += $row['count'];
+            } elseif ($answer >= 7) {
+                $ratings[1] += $row['count'];
+            } elseif ($answer >= 5) {
+                $ratings[2] += $row['count'];
+            } elseif ($answer >= 3) {
+                $ratings[3] += $row['count'];
+            } else {
+                $ratings[4] += $row['count'];
+            }
+        }
+    }
+
+    return [
+        'total_surveys' => $total_surveys,
+        'positive_feedback' => $positive_feedback,
+        'negative_feedback' => $negative_feedback,
+        'average_satisfaction' => $average_satisfaction,
+        'ratings' => $ratings
     ];
 }
 
-// Hitung total survey dan rata-rata keseluruhan berdasarkan filter
-$survey_count = count($respondents);
-$overall_average = array_sum(array_column($respondents, 'avg_rating')) / $survey_count;
+// Mendapatkan filter layanan dan rentang tanggal dari query string
+$layanan_filter = isset($_GET['layanan']) ? $_GET['layanan'] : 'all';
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
+$data = getSurveyData($layanan_filter, $start_date, $end_date);
 
-// Fungsi untuk mendapatkan daftar responden survey
-function get_survey_respondents($limit = 5) {
-    global $pdo;
-    $query = "
-        SELECT s.id, s.unit_kerja, s.layanan, s.tanggal, 
-               AVG(sa.answer) as avg_rating
-        FROM surveys s
-        JOIN survey_answers sa ON s.id = sa.survey_id
-        GROUP BY s.id
-        ORDER BY s.tanggal DESC
-        LIMIT :limit
-    ";
-    $stmt = $pdo->prepare($query);
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-$avg_ratings = get_survey_respondents();
-
+$conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Survey Layanan IT</title><br>
-    <!-- <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet"> -->
-    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" /> -->
-    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script> -->
-    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
-
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-
-
+    <title>Dashboard</title>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
+            font-size: 14px;
             line-height: 1.6;
             color: #333;
             background-color: #f4f4f4;
@@ -108,7 +112,7 @@ $avg_ratings = get_survey_respondents();
             display: flex;
         }
         .sidebar {
-            width: 250px;
+            width: 15%;
             background-color: #2c3e50;
             color: #ecf0f1;
             padding: 20px;
@@ -156,11 +160,6 @@ $avg_ratings = get_survey_respondents();
             color: #333;
             margin-top: 0;
         }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
         .card {
             background-color: #fff;
             border-radius: 5px;
@@ -168,176 +167,192 @@ $avg_ratings = get_survey_respondents();
             padding: 20px;
             margin-bottom: 20px;
         }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+        .card h3 {
+            margin-top: 0;
         }
-        .stat-item {
-            text-align: center;
-            padding: 20px;
-            background-color: #f8f9fa;
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .metric {
+            background-color: #fff;
             border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            flex: 1;
+            margin-right: 20px;
+            text-align: center;
         }
-        .stat-value {
+        .metric:last-child {
+            margin-right: 0;
+        }
+        .metric h3 {
+            margin-top: 0;
             font-size: 24px;
-            font-weight: bold;
-            color: #3498db;
         }
-        .stat-label {
-            font-size: 14px;
-            color: #777;
+        .metric p {
+            font-size: 18px;
+            margin: 10px 0 0;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .chart {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
         }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .btn-details {
-            background-color: #6c5ce7;
-            color: white;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 3px;
+        .tabs {
+            display: flex;
             cursor: pointer;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
         }
-        input[type="text"], input[type="tel"], input[type="date"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+        .tab {
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            background-color: #f2f2f2;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
         }
-        .daterangepicker {
-            z-index: 9999 !important;
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+        }
+        .tab-content {
+            display: none;
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 0 0 5px 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .date-filter {
+            margin-bottom: 20px;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(function() {
+            $("#start_date, #end_date").datepicker({
+                dateFormat: 'yy-mm-dd'
+            });
+
+            // Event listener untuk filter tanggal
+            $('#filterForm').on('submit', function(e) {
+                e.preventDefault();
+                const startDate = $('#start_date').val();
+                const endDate = $('#end_date').val();
+                const layanan = '<?php echo $layanan_filter; ?>';
+                window.location.href = `dashboard.php?layanan=${layanan}&start_date=${startDate}&end_date=${endDate}`;
+            });
+        });
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+        }
+
+        window.onload = function() {
+            showTab('tab1'); // Default tab
+        }
+
+        function renderPieChart(data) {
+            const ctx = document.getElementById('satisfactionPieChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Sangat Baik/Sangat Puas (9-10)', 'Baik/Puas (7-8)', 'Cukup Baik/Cukup Puas (5-6)', 'Tidak Baik/Tidak Puas (3-4)', 'Sangat Tidak Baik/Sangat Tidak Puas (1-2)'],
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#2ecc71', '#3498db', '#f1c40f', '#e67e22', '#e74c3c'],
+                        borderColor: ['#27ae60', '#2980b9', '#f39c12', '#d35400', '#c0392b'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw + ' responses';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Data untuk pie chart
+        const pieData = <?php echo json_encode($data['ratings']); ?>;
+        renderPieChart(pieData);
+    </script>
 </head>
 <body>
     <div class="sidebar">
         <h2>Admin Panel</h2>
         <ul>
-            <li><a href="dashboard.php" class="active">Dashboard</a></li>
-            <li><a href="manage_questions.php">Kelola Pertanyaan</a></li>
-            <li><a href="download_results.php">Download Hasil Survey</a></li>
+            <li><a href="dashboard.php?layanan=all" class="<?php echo $layanan_filter == 'all' ? 'active' : ''; ?>">All</a></li>
+            <li><a href="dashboard.php?layanan=Laptop" class="<?php echo $layanan_filter == 'Laptop' ? 'active' : ''; ?>">Laptop</a></li>
+            <li><a href="dashboard.php?layanan=Printer" class="<?php echo $layanan_filter == 'Printer' ? 'active' : ''; ?>">Printer</a></li>
+            <li><a href="dashboard.php?layanan=Penyedia_Layanan_IT" class="<?php echo $layanan_filter == 'Penyedia_Layanan_IT' ? 'active' : ''; ?>">Penyedia Layanan IT</a></li>
             <li><a href="../logout.php">Logout</a></li>
         </ul>
     </div>
     <div class="main-content">
         <div class="container">
             <div class="header">
-                <h1>Dashboard Admin</h1>
+                <h1>Dashboard</h1>
             </div>
-            <div class="card">
-                <form method="GET" action="">
-                    <table>
-                        <tr>
-                            <td>
-                                <select name="report_type" id="report_type" placeholder="Semua Laporan">
-                                    <option value="all" <?= $reportType == 'all' ? 'selected' : '' ?>>Semua Laporan</option>
-                                    <option value="Laptop" <?= $reportType == 'Laptop' ? 'selected' : '' ?>>Laporan Laptop</option>
-                                    <option value="Printer" <?= $reportType == 'Printer' ? 'selected' : '' ?>>Laporan Printer</option>
-                                    <option value="Penyedia_Layanan_IT" <?= $reportType == 'Penyedia_Layanan_IT' ? 'selected' : '' ?>>Laporan Penyedia Layanan IT</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="text" name="date_range" id="date_range" class="form-control">
-                            </td>
-                            <td>
-                                <button type="submit">Filter</button>
-                            </td>
-                        </tr>
-                    </table>
+            <div class="date-filter">
+                <form id="filterForm">
+                    <label for="start_date">Start Date:</label>
+                    <input type="text" id="start_date" name="start_date" value="<?php echo $start_date; ?>">
+                    <label for="end_date">End Date:</label>
+                    <input type="text" id="end_date" name="end_date" value="<?php echo $end_date; ?>">
+                    <button type="submit">Filter</button>
                 </form>
-                <h2>Responden Survey Terbaru</h2>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value"><?php echo $survey_count; ?></div>
-                        <div class="stat-label">Total Survey</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value"><?php echo number_format($overall_average, 2); ?></div>
-                        <div class="stat-label">Rata-rata Keseluruhan</div>
-                    </div>
+            </div>
+            <div class="metrics">
+                <div class="metric">
+                    <h3><?php echo $data['total_surveys']; ?></h3>
+                    <p>Total Surveys</p>
                 </div>
-                <br>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Unit Kerja</th>
-                            <th>Layanan</th>
-                            <th>Tanggal</th>   
-                            <th>Rata-rata Rating</th>
-                            <th>Feedback</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($respondents as $respondent): ?>
-                            <tr>
-                                <td><?php echo $respondent['id']; ?></td>
-                                <td><?php echo $respondent['unit_kerja']; ?></td>
-                                <td><?php echo $respondent['layanan']; ?></td>
-                                <td><?php echo $respondent['tanggal']; ?></td>
-                                <td><?php echo number_format($respondent['avg_rating'], 2); ?></td>
-                                <td>
-                                    <?php
-                                    $feedback = $respondent['feedback'];
-                                    if (strlen($feedback) > 27) {
-                                        echo substr($feedback, 0, 27) . '... ';
-                                        echo '<a href="#" class="more-link" data-full-text="' . htmlspecialchars($feedback) . '">More</a>';
-                                    } else {
-                                        echo $feedback;
-                                    }
-                                    ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                <div class="metric">
+                    <h3><?php echo round($data['average_satisfaction'], 2); ?></h3>
+                    <p>Average Satisfaction</p>
+                </div>
+                <div class="metric">
+                    <h3><?php echo $data['positive_feedback']; ?></h3>
+                    <p>Positive Feedback</p>
+                </div>
+                <div class="metric">
+                    <h3><?php echo $data['negative_feedback']; ?></h3>
+                    <p>Negative Feedback</p>
+                </div>
+            </div>
+            <div class="chart">
+                <canvas id="satisfactionChart"></canvas>
+            </div>
+            <div class="chart">
+                <canvas id="satisfactionPieChart"></canvas>
             </div>
         </div>
     </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var moreLinks = document.querySelectorAll('.more-link');
-        moreLinks.forEach(function(link) {
-            link.addEventListener('click', function(event) {
-                event.preventDefault();
-                var fullText = this.getAttribute('data-full-text');
-                this.parentElement.innerHTML = fullText;
-            });
-        });
-    });
-    $(function() {
-        $('#date_range').daterangepicker({
-            locale: {
-                format: 'YYYY-MM-DD'
-            },
-            startDate: '<?= $startDate ?>',
-            endDate: '<?= $endDate ?>',
-            singleDatePicker: false,
-            showDropdowns: true,
-            autoApply: true,
-            opens: 'right',
-            drops: 'down',
-            linkedCalendars: false,
-            showCustomRangeLabel: false,
-            alwaysShowCalendars: true,
-            singleCalendar: true
-        });
-    });
-    </script>
-
-
-
 </body>
 </html>

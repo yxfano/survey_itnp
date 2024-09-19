@@ -55,6 +55,7 @@ $questions = get_all_questions();
     <style>
         body {
             font-family: 'Roboto', sans-serif;
+            font-size:12px;
             line-height: 1.6;
             color: #333;
             background-color: #f4f4f4;
@@ -63,7 +64,7 @@ $questions = get_all_questions();
             display: flex;
         }
         .sidebar {
-            width: 250px;
+            width: 15%;
             background-color: #2c3e50;
             color: #ecf0f1;
             padding: 20px;
@@ -164,7 +165,9 @@ $questions = get_all_questions();
         <h2>Admin Panel</h2>
         <ul>
             <li><a href="dashboard.php">Dashboard</a></li>
+            <li><a href="data_kuesioner.php">Data Kuesioner</a></li>
             <li><a href="manage_questions.php" class="active">Kelola Pertanyaan</a></li>
+            <li><a href="presentase_kuesioner.php">Presentase Kuesioner</a></li>
             <li><a href="download_results.php">Download Hasil Survey</a></li>
             <li><a href="../logout.php">Logout</a></li>
         </ul>

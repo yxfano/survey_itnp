@@ -70,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['download'])) {
     <style>
         body {
             font-family: 'Roboto', sans-serif;
+            font-size:12px;
             line-height: 1.6;
             color: #333;
             background-color: #f4f4f4;
@@ -78,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['download'])) {
             display: flex;
         }
         .sidebar {
-            width: 250px;
+            width: 15%;
             background-color: #2c3e50;
             color: #ecf0f1;
             padding: 20px;
@@ -152,7 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['download'])) {
         <h2>Admin Panel</h2>
         <ul>
             <li><a href="dashboard.php">Dashboard</a></li>
+            <li><a href="data_kuesioner.php">Data Kuesioner</a></li>
             <li><a href="manage_questions.php">Kelola Pertanyaan</a></li>
+            <li><a href="presentase_kuesioner.php">Presentase Kuesioner</a></li>
             <li><a href="download_results.php" class="active">Download Hasil Survey</a></li>
             <li><a href="../logout.php">Logout</a></li>
         </ul>

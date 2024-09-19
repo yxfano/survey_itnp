@@ -1,8 +1,3 @@
-<?php
-require_once 'includes/config.php';
-require_once 'includes/functions.php';
-require_once 'includes/db.php';
-?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -10,6 +5,8 @@ require_once 'includes/db.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Survey Layanan IT</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -40,7 +37,7 @@ require_once 'includes/db.php';
             font-weight: bold;
         }
         .tanggal {
-            background-color: 	#D3D3D3;
+            background-color: #D3D3D3;
         }
         input[type="text"], input[type="tel"], input[type="date"], select, textarea {
             width: 100%;
@@ -117,16 +114,14 @@ require_once 'includes/db.php';
             </div>
             <div class="form-group indikator">
                 <label for="indikator">Indikator Penilaian:</label>
-                <p><i>1-2 Sangat Buruk &nbsp 3-4 Buruk &nbsp 5-6 Netral &nbsp 7-8 Baik &nbsp 9-10 Sangat Baik</i></p>
+                <p><i>1-2 Sangat Buruk   3-4 Buruk   5-6 Netral   7-8 Baik   9-10 Sangat Baik</i></p>
             </div>
             <div id="survey-questions"></div>
-            
             <h2>Kritik dan Saran</h2>
             <div class="form-group">
                 <label for="feedback">Kritik dan Saran:</label>
                 <textarea id="feedback" name="feedback" placeholder="Tuliskan kritik dan saran Anda di sini..."></textarea>
             </div>
-            
             <button type="submit">Kirim Survey</button>
         </form>
     </div>

@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const layananSelect = document.getElementById('layanan');
     const surveyQuestions = document.getElementById('survey-questions');
-    
+    const feedbackTextarea = document.getElementById('feedback');
+    const surveyForm = document.getElementById('survey-form');
+
     // Menambahkan kode untuk mengisi tanggal otomatis
     const today = new Date().toISOString().split('T')[0];
     const surveyDateInput = document.getElementById('surveyDate');
@@ -38,6 +40,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         } else {
             surveyQuestions.innerHTML = '';
+        }
+    });
+
+    surveyForm.addEventListener('submit', function(event) {
+        const ratings = Array.from(surveyQuestions.querySelectorAll('input[type="radio"]:checked')).map(input => parseInt(input.value));
+        const averageRating = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+
+        if (averageRating < 5 && !feedbackTextarea.value.trim()) {
+            event.preventDefault();
+            alert('Silakan isi kritik dan saran jika rata-rata penilaian kurang dari 5.');
+            feedbackTextarea.required = true;
+        } else {
+            feedbackTextarea.required = false;
         }
     });
 });
